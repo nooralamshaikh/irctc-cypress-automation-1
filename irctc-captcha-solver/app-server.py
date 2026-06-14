@@ -6,14 +6,24 @@ import base64
 import easyocr
 from flask import Flask, request, jsonify
 
-# Initialize EasyOCR Reader
-reader = easyocr.Reader(["en"], model_storage_directory="./EasyOCR")
+reader = None
 
 # Initialize Flask app
 app = Flask(__name__)
 
+def create_reader(use_gpu=False):
+  return easyocr.Reader(
+      ["en"],
+      model_storage_directory="./EasyOCR",
+      gpu=use_gpu,
+      verbose=use_gpu,
+  )
+
 def extract_text_from_image(base64_image):
   try:
+    if reader is None:
+      return "Error processing image: OCR reader is not initialized"
+
     # Convert the base64 image to bytes
     image_bytes = base64.b64decode(base64_image[22:])
     # Create a BytesIO object from the image bytes
@@ -66,7 +76,14 @@ if __name__ == "__main__":
       default=5000,
       help="Port to run the server on (default: 5000)",
   )
+  parser.add_argument(
+      "--gpu",
+      action="store_true",
+      help="Use CUDA GPU acceleration if your PyTorch install supports it",
+  )
   args = parser.parse_args()
+
+  reader = create_reader(use_gpu=args.gpu)
 
   # Run Flask server
   app.run(host=args.host, port=args.port)

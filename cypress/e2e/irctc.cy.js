@@ -22,6 +22,7 @@ describe('IRCTC TATKAL BOOKING', () => {
     cy.clearLocalStorage()
     cy.viewport(1478, 1056)
     cy.visit('https://www.irctc.co.in/nget/train-search', {
+      headers: Cypress.env('irctcClientHeaders'),
       failOnStatusCode: false,
       timeout: 90000
     })
